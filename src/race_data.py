@@ -26,7 +26,7 @@ def label_race_splits(race_splits):
     '''
     race_split_names = {}
     for split in race_splits:
-        split_description = f'{split['cd']}m_'
+        split_description = f'{split['cd']}m'
         race_split_names[split["cid"]] = split_description
     return race_split_names
 
@@ -60,6 +60,7 @@ def get_leaderboard_results(rid, eid, mid, page=0, pageSize=10, sort='', categor
     else:
         response.raise_for_status()
 
+
 if __name__ == "__main__":
     # Example usage
     data = get_leaderboard_results(rid=140564, eid=41996, mid=1370)
@@ -68,16 +69,16 @@ if __name__ == "__main__":
     with open('10k_test.json', 'w') as f:
         json.dump(data, f)
 
-    race_info = data['page_info']
-    split_info = data['split_config']
+    race_info = data['pageInfo']
+    split_info = data['splitconfig']
     leader_board = data['results']
 
-    total_athletes = data['page_info']['total_athletes']
-    total_pages = data['page_info']['total_pages']
+    total_athletes = data['pageInfo']['total_athletes']
+    total_pages = data['pageInfo']['total_pages']
 
     # will omit names from data 
 
-    print(label_race_splits(data['split_config']))
+    segments = label_race_splits(split_info)
 
     # 1. send request to get total # of entries
     # "pageInfo": {
@@ -85,3 +86,33 @@ if __name__ == "__main__":
     #         "total_pages": 690,
     #         "page": "0",
     #         "pageSize": "10",    
+
+    race_entries = []
+    for entry in leader_board:
+
+        entry_data= {
+            "pid": entry["pid"],
+            "age": entry["pa"],
+            "overall_rank": entry["rtro"],
+            "gender_rank": entry["rtrg"],
+            "category_rank": entry["rtrc"],
+            "bib": entry["bib"],
+            "gender": entry["pg"],
+            "category": entry["pc"]
+        }
+
+        for race_segment in segments.keys():
+
+            split = entry['data'][str(race_segment)]['pace']
+            segment_label = segments[race_segment]
+            split_data = {
+                # f"{segment_label}_time":split["tod"],
+                f"{segment_label}_kph":split["kph"],
+                f"{segment_label}_pkm":split["pkm"]
+
+            }
+            entry_data.update(split_data)
+        race_entries.append(entry_data)
+
+    print(race_entries)
+    
