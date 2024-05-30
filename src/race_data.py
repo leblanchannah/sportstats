@@ -74,8 +74,17 @@ def search_events(search_term, limit_count=20, limit_offset=0):
 
 
 
-def get_event_race_list():
-    return None
+def get_event_race_list(slug):
+    # ottawa-race-weekend.json?slug=ottawa-race-weekend
+    base_url = 'https://sportstats.one/_next/data/jsw_cJQFRdZTth-22YQKv/en/event/'
+    url_w_json = base_url + slug + '.json'
+    params = {'slug': slug}
+    response = requests.get(url_w_json, params=params)
+    response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+    return response.json()['pageProps']['last_event']['races']
+
+
+
 
 
 
@@ -113,6 +122,9 @@ def get_leaderboard_results(rid, eid, mid, page=0, page_size=10, sort='', catego
 if __name__ == "__main__":
 
     print(search_events("ottawa", limit_count=20, limit_offset=0))
+
+
+    print(get_event_race_list('ottawa-race-weekend'))
     # Example usage
     # data = get_leaderboard_results(rid=140564, eid=41996, mid=1370, page=0, page_size=600)
     # # print(data)
