@@ -1,5 +1,10 @@
 import requests
 import json
+import pandas as pd
+
+
+def convert_segment_time(time_ms):
+    return time_ms / 60000.0
 
 
 def label_race_splits(race_splits):
@@ -103,16 +108,18 @@ if __name__ == "__main__":
 
         for race_segment in segments.keys():
 
-            split = entry['data'][str(race_segment)]['pace']
+            split = entry['data'][str(race_segment)]
             segment_label = segments[race_segment]
             split_data = {
-                # f"{segment_label}_time":split["tod"],
-                f"{segment_label}_kph":split["kph"],
-                f"{segment_label}_pkm":split["pkm"]
+                f"{segment_label}_tod":split["tod"],
+                f"{segment_label}_rt":split["rt"],
+                f"{segment_label}_kph":split['pace']["kph"],
+                f"{segment_label}_pkm":split['pace']["pkm"]
 
             }
             entry_data.update(split_data)
         race_entries.append(entry_data)
 
-    print(race_entries)
+    print(pd.DataFrame(race_entries).head())
+
     
