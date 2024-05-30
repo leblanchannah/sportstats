@@ -1,6 +1,7 @@
 import requests
 import json
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def convert_segment_time(time_ms):
@@ -36,7 +37,7 @@ def label_race_splits(race_splits):
     return race_split_names
 
 
-def get_leaderboard_results(rid, eid, mid, page=0, pageSize=10, sort='', category='', gender='', searchData=''):
+def get_leaderboard_results(rid, eid, mid, page=0, page_size=10, sort='', category='', gender='', search_data=''):
 
     '''
     TODO
@@ -51,11 +52,11 @@ def get_leaderboard_results(rid, eid, mid, page=0, pageSize=10, sort='', categor
         'eid': eid, # event id?
         'mid': mid, # ?
         'page': page,
-        'pageSize': pageSize,
+        'pageSize': page_size,
         'sort': sort,
         'category': category,
         'gender': gender,
-        'searchData': searchData
+        'searchData': search_data
     }
     
     response = requests.get(base_url, params=params)
@@ -68,7 +69,7 @@ def get_leaderboard_results(rid, eid, mid, page=0, pageSize=10, sort='', categor
 ######
 if __name__ == "__main__":
     # Example usage
-    data = get_leaderboard_results(rid=140564, eid=41996, mid=1370)
+    data = get_leaderboard_results(rid=140564, eid=41996, mid=1370, page=0, page_size=600)
     # print(data)
 
     with open('10k_test.json', 'w') as f:
@@ -120,6 +121,8 @@ if __name__ == "__main__":
             entry_data.update(split_data)
         race_entries.append(entry_data)
 
-    print(pd.DataFrame(race_entries).head())
+    df_results = pd.DataFrame(race_entries)
+    plt.hist(df_results['10000m_rt'])
+    plt.show()
 
     
