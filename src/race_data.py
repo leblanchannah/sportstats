@@ -3,8 +3,58 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
+# current endpoint for use in Ottawa, not sure if this changes
 SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
+
+class Sportstats:
+
+    def __init__(self, gateway_endpoint):
+        self.gateway_endpoint = gateway_endpoint
+        self.base_url = f'https://{gateway_endpoint}.execute-api.us-west-2.amazonaws.com/public/'
+
+
+    def _get(self, url, params):
+        response = requests.get(url, params=params)
+        response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+        return response.json()
+    
+     
+    def search_events(self, search_term, limit_count=20, limit_offset=0):
+        url = f'{self.base_url}eventsearch'
+        params = {
+            'limitcount': limit_count,
+            'limitoffset': limit_offset,
+            'lbl': search_term
+        }
+        return self._get(url, params=params)
+    
+
+    def get_leaderboard_results(self, race_id, event_id, mid, page=0, page_size=10, sort='', category='', gender='', search_data=''):
+        url = f'{self.base_url}results'
+        params = {
+            'rid': race_id,  
+            'eid': event_id,
+            'mid': mid, # ?
+            'page': page,
+            'pageSize': page_size,
+            'sort': sort,
+            'category': category,
+            'gender': gender,
+            'searchData': search_data
+        }
+        return self._get(url, params=params)
+    
+
+    def get_event_race_list(self, slug_name):
+        # need to figure out where code in url comes from 
+        # ottawa-race-weekend.json?slug=ottawa-race-weekend
+        base_url = 'https://sportstats.one/_next/data/jsw_cJQFRdZTth-22YQKv/en/event/'
+        url_w_json = base_url + slug_name + '.json'
+        params = {'slug': slug_name}
+        response = requests.get(url_w_json, params=params)
+        response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+        return response.json()['pageProps']['last_event']['races']
+
 
 def convert_segment_time(time_ms):
     return time_ms / 60000.0
@@ -39,92 +89,21 @@ def label_race_splits(race_splits):
     return race_split_names
 
 
-def search_events(search_term, limit_count=20, limit_offset=0):
-
-    # example output [
-    # {
-    #     "eid": "41994",
-    #     "dy": "2024",
-    #     "dts": "2024-06-01 04:00:00",
-    #     "slug": "defi-entreprises-ottawa-gatineau",
-    #     "dme": "6",
-    #     "tz": "America\/Toronto",
-    #     "eik": "41994_6639426f5a2a4.png",
-    #     "dye": "2024",
-    #     "lo1": "Gatineau",
-    #     "lbl": "Defi Entreprises Ottawa Gatineau",
-    #     "lo3": "CAN",
-    #     "sid": "",
-    #     "dte": "2024-06-01 04:00:00",
-    #     "lo2": "QC",
-    #     "dm": "6",
-    #     "mid": "455"
-    # },
-
-    base_url = 'https://5b8btxj9jd.execute-api.us-west-2.amazonaws.com/public/eventsearch'
-    params = {
-        'limitcount': limit_count,
-        'limitoffset': limit_offset,
-        'lbl': search_term
-    }
-    
-    response = requests.get(base_url, params=params)
-    response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-    return response.json()
-
-
-
-def get_event_race_list(slug):
-    # ottawa-race-weekend.json?slug=ottawa-race-weekend
-    base_url = 'https://sportstats.one/_next/data/jsw_cJQFRdZTth-22YQKv/en/event/'
-    url_w_json = base_url + slug + '.json'
-    params = {'slug': slug}
-    response = requests.get(url_w_json, params=params)
-    response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-    return response.json()['pageProps']['last_event']['races']
-
-
-
-
-
-
-
-def get_leaderboard_results(rid, eid, mid, page=0, page_size=10, sort='', category='', gender='', search_data=''):
-
-    '''
-    TODO
-    - get base url for sportsstats
-    - test filters
-    - test sort
-    - test search
-    '''
-    base_url = "https://5b8btxj9jd.execute-api.us-west-2.amazonaws.com/public/results"
-    params = {
-        'rid': rid,  # race id?
-        'eid': eid, # event id?
-        'mid': mid, # ?
-        'page': page,
-        'pageSize': page_size,
-        'sort': sort,
-        'category': category,
-        'gender': gender,
-        'searchData': search_data
-    }
-    
-    response = requests.get(base_url, params=params)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+def leaderboard_to_dataframe():
+    return None
 
 ######
 if __name__ == "__main__":
+    api = Sportstats(SPORTSTATS_AWS_GATEWAY_ENDPOINT)
 
-    print(search_events("ottawa", limit_count=20, limit_offset=0))
+    # Search for events
+    events = api.search_events("ottawa", limit_count=2, limit_offset=0)
+    print(events)
 
+    # Get event race list
+    race_list = api.get_event_race_list('ottawa-race-weekend')
+    print(race_list)
 
-    print(get_event_race_list('ottawa-race-weekend'))
     # Example usage
     # data = get_leaderboard_results(rid=140564, eid=41996, mid=1370, page=0, page_size=600)
     # # print(data)
