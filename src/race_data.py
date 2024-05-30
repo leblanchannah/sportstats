@@ -161,4 +161,10 @@ if __name__ == "__main__":
     # plt.hist(df_results['10000m_rt'])
     # plt.show()
 
-    
+
+    # TO DO 
+    # - search race events using base url instead of url with json in it
+    # - move data reformat to dataframe from main to separate function
+    # - test getting full leaderboard through pagination
+    # - test getting single runner results from leaderboard
+    # - plot percentile of single runner within race time distribution
