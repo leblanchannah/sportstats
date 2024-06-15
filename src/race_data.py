@@ -14,9 +14,86 @@ from bs4 import BeautifulSoup
 SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
 
 
+
+
+# {
+#             "pid": 1,
+#             "ssuid": null,
+#             "pt": null,
+#             "pa": 28,
+#             "rtro": 1,
+#             "rtrg": 1,
+#             "rtrc": 1,
+#             "bib": "1",
+#             "pcid": null,
+#             "ptid": null,
+#             "pnf": "Lee",
+#             "pnl": "Wesselius",
+#             "pdn": "Lee Wesselius",
+#             "lo1": "Mountain",
+#             "lo2": "ON",
+#             "lo3": "CAN",
+#             "pg": "m",
+#             "pc": "M25-29",
+#             "ps": null,
+#             "dn": "Lee Wesselius",
+#             "data": {
+#                 "333890": {
+#                     "cd": 920000,
+#                     "rt": 920000,
+#                     "st": 920000,
+#                     "tod": 27923000,
+#                     "pace": {
+#                         "kph": 19.57,
+#                         "mph": 12.16,
+#                         "pkm": "3:04.2",
+#                         "pmi": "4:55.8",
+#                         "p100": "00:18"
+#                     },
+#                     "stro": 1,
+#                     "rtro": 1,
+#                     "strg": 1,
+#                     "rtrg": 1,
+#                     "strc": 1,
+#                     "rtrc": 1
+#                 },
+#                 "333891": {
+#                     "cd": 1792000,
+#                     "rt": 1792000,
+#                     "st": 0,
+#                     "tod": 28794000,
+#                     "pace": {
+#                         "kph": 20.09,
+#                         "mph": 12.48,
+#                         "pkm": "2:59.4",
+#                         "pmi": "4:48.6",
+#                         "p100": "00:17"
+#                     },
+#                     "stro": 0,
+#                     "strg": 0,
+#                     "strc": 0,
+#                     "rtro": 1,
+#                     "rtrg": 1,
+#                     "rtrc": 1
+#                 }
+#             },
+#             "ot": 1792000,
+#             "ldc": 0,
+#             "ldg": 0,
+#             "ldo": 0,
+#             "rank": 1
+#         },
+
 class RaceResult:
-    def __init__():
-        pass
+    def __init__(self, pid:int, bib:str, pa:int, pg:str, pc:str, data: Dict, **kwargs) -> None:
+        self.pid = pid
+        self.bib = bib
+        self.age = pa
+        self.gender = pg
+        self.category = pc
+        self.race_data = data
+        self.__dict__.update(kwargs)
+
 
 class RequestResult:
     def __init__(self, status_code: int, message: str = '', data: List[Dict] = None):
@@ -30,16 +107,15 @@ class RestAdapter:
         self.base_url = hostname
 
 
-    def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None):
+    def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None) -> RequestResult:
         full_url = self.base_url + endpoint
         try:
             response = requests.request(method=http_method, url=full_url, params=ep_params, json=data)
             data_out = response.json()
+            return RequestResult(response.status_code, message=response.reason, data=data_out)
         except requests.exceptions.RequestException as e:
             raise Exception(data_out["message"])
         
-        if 299 >= response.status_code >=200:
-            return data_out
 
     def get(self, endpoint: str, ep_params: Dict=None):
         return self._do(http_method='GET', endpoint=endpoint, ep_params=ep_params)
@@ -86,13 +162,13 @@ class SportStatsApi:
 
 if __name__ == "__main__":
     api = SportStatsApi()
-    event_id = api.search_event("ottawa", 2, 0)[1]['eid'] # gives eid - event id, will need slug
+    event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
     print(event_id)
     mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
     for race in ottawa_races:
         print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
-    print(api.get_leaderboard_results('140564',event_id, '1370'))
+    print(api.get_leaderboard_results('140564',event_id, '1370').data)
 
     
 
