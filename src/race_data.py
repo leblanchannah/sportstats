@@ -85,14 +85,18 @@ SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
 #         },
 
 class RaceResult:
-    def __init__(self, pid:int, bib:str, pa:int, pg:str, pc:str, data: Dict, **kwargs) -> None:
+    def __init__(self, pid:int, bib:str, pa:int, pg:str, pc:str, data: Dict, rank: int, **kwargs) -> None:
         self.pid = pid
         self.bib = bib
         self.age = pa
         self.gender = pg
         self.category = pc
         self.race_data = data
+        self.rank = rank
         self.__dict__.update(kwargs)
+
+    def __str__(self):
+        return f'Bib:{self.bib}, Age:{self.age}, Gender:{self.gender}, Category:{self.category}, Place:{self.rank}'
 
 
 class RequestResult:
@@ -168,7 +172,12 @@ if __name__ == "__main__":
     for race in ottawa_races:
         print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
-    print(api.get_leaderboard_results('140564',event_id, '1370').data)
+    leaderboard = []
+    for entry in api.get_leaderboard_results('140564', event_id, '1370').data['results']:
+        leaderboard.append(RaceResult(**entry))
+
+    print([print(str(x)) for x in leaderboard])
+
 
     
 
