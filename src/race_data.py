@@ -128,27 +128,34 @@ def convert_segment_time(time_ms):
     return time_ms / 60000.0
 
 if __name__ == "__main__":
-    api = SportStatsApi()
-    event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
-    print(event_id)
-    mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
-    for race in ottawa_races:
-        print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
+    # api = SportStatsApi()
+    # event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
+    # print(event_id)
+    # mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
+    # for race in ottawa_races:
+    #     print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
-    json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
-    with open('../data/10k_test.json', 'w') as f:
-        f.write(json_string)
+    # json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
+    # with open('../data/10k_test.json', 'w') as f:
+    #     f.write(json_string)
 
     
     with open('../data/10k_test.json') as f:
         d = json.load(f)
         df = pd.json_normalize(d)
 
-    print(df.columns)
-    print(df.head())
-
+    # print(df.columns)
+    # print(df.head())
+    df = df[df['gender']=='f']
     df['race_data.381034.rt'] = convert_segment_time(df['race_data.381034.rt'])
-    plt.hist(df['race_data.381034.rt'], bins=140)
+    my_time = df[df['bib']=='30482']['race_data.381034.rt'].values
+    n, bins, patches = plt.hist(df['race_data.381034.rt'], bins=60)
+    my_bin = (bins<my_time).sum()
+    # Change the color of the third bin (index 2)
+    patches[my_bin].set_facecolor('red')
+    plt.title('Ottawa Race Weekend 10k, Female')
+    plt.xlabel('Time (Mins)')
+    plt.ylabel('Count')
     plt.show()
     # 381034 = 10k
 
