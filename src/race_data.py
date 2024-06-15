@@ -6,7 +6,9 @@
 import requests
 from typing import Dict, List
 import re, json
+import pandas as pd
 from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
 
 # current endpoint for use in Ottawa, not sure if this changes
 SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
@@ -85,7 +87,7 @@ class SportStatsApi:
         return mid, races
     
     
-    def get_leaderboard_results(self, race_id:str, event_id:str, mid:str, category:str='', gender:str='', search_data:str='', page:int=0, page_size:int=10, max_amount:int=100):
+    def get_leaderboard_results(self, race_id:str, event_id:str, mid:str, category:str='', gender:str='', search_data:str='', page:int=0, page_size:int=10, max_amount:int=-1):
         leaderboard = []
         last_page = 0
         total_athletes_in_board = 0
@@ -114,13 +116,16 @@ class SportStatsApi:
                 entry['split_config'] = request['splitconfig']
                 leaderboard.append(RaceResult(**entry))
                 total_athletes_requested += 1
-                if total_athletes_requested >= max_amount:
+                if total_athletes_requested >= max_amount and max_amount!=-1:
                     last_page = 0
                     break
             params['page'] += 1
 
         return leaderboard
         
+
+def convert_segment_time(time_ms):
+    return time_ms / 60000.0
 
 if __name__ == "__main__":
     api = SportStatsApi()
@@ -130,13 +135,22 @@ if __name__ == "__main__":
     for race in ottawa_races:
         print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
-
-    print(api.get_leaderboard_results('140564', event_id, '1370', page_size=5, max_amount=2))
+    json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
+    with open('../data/10k_test.json', 'w') as f:
+        f.write(json_string)
 
     
+    with open('../data/10k_test.json') as f:
+        d = json.load(f)
+        df = pd.json_normalize(d)
+
+    print(df.columns)
+    print(df.head())
+
+    df['race_data.381034.rt'] = convert_segment_time(df['race_data.381034.rt'])
+    plt.hist(df['race_data.381034.rt'], bins=140)
+    plt.show()
+    # 381034 = 10k
 
 
-
-# def convert_segment_time(time_ms):
-#     return time_ms / 60000.0
 
