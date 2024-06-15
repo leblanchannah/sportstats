@@ -1,10 +1,28 @@
+# to do 
+# 1. determine best latency for page requests
+# 2. leaderboard results data Model
+# 3. separate race adapter from api class
+# 4. add excceptions
+# 5. add logging
+
 import requests
-from typing import Dict
+from typing import Dict, List
 import re, json
 from bs4 import BeautifulSoup
 
 # current endpoint for use in Ottawa, not sure if this changes
 SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
+
+
+class RaceResult:
+    def __init__():
+        pass
+
+class RequestResult:
+    def __init__(self, status_code: int, message: str = '', data: List[Dict] = None):
+        self.status_code = int(status_code)
+        self.message = str(message)
+        self.data = data if data else []
 
 class RestAdapter:
 
@@ -60,6 +78,9 @@ class SportStatsApi:
             'searchData': search_data
         }
         return self._rest_adapter.get(endpoint='results', ep_params=params)
+    
+    def get_full_leaderboard():
+        return None
         
         
 
