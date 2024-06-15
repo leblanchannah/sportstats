@@ -46,45 +46,35 @@ class SportStatsApi:
         races = event_script["props"]["pageProps"]["last_event"]["races"]
         return mid, races
 
-    # def get_leaderboard_results(self, )
+    def get_leaderboard_results(self, race_id:str, event_id:str, mid:str, page:int=0, page_size:int=10,
+                                 sort:str='', category:str='', gender:str='', search_data:str=''):
+        params = {
+            'rid': race_id,  
+            'eid': event_id,
+            'mid': mid, # ?
+            'page': page,
+            'pageSize': page_size,
+            'sort': sort,
+            'category': category,
+            'gender': gender,
+            'searchData': search_data
+        }
+        return self._rest_adapter.get(endpoint='results', ep_params=params)
         
         
 
 if __name__ == "__main__":
     api = SportStatsApi()
-    print(api.search_event("ottawa", 1, 0)) # gives eid - event id, will need slug
+    event_id = api.search_event("ottawa", 2, 0)[1]['eid'] # gives eid - event id, will need slug
+    print(event_id)
     mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
     for race in ottawa_races:
         print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
+    print(api.get_leaderboard_results('140564',event_id, '1370'))
 
     
 
-#     def get_leaderboard_results(self, race_id, event_id, mid, page=0, page_size=10, sort='', category='', gender='', search_data=''):
-#         url = f'{self.base_url}results'
-#         params = {
-#             'rid': race_id,  
-#             'eid': event_id,
-#             'mid': mid, # ?
-#             'page': page,
-#             'pageSize': page_size,
-#             'sort': sort,
-#             'category': category,
-#             'gender': gender,
-#             'searchData': search_data
-#         }
-#         return self._get(url, params=params)
-    
-
-#     def get_event_race_list(self, slug_name):
-#         # need to figure out where code in url comes from 
-#         # ottawa-race-weekend.json?slug=ottawa-race-weekend
-#         base_url = 'https://sportstats.one/_next/data/jsw_cJQFRdZTth-22YQKv/en/event/'
-#         url_w_json = base_url + slug_name + '.json'
-#         params = {'slug': slug_name}
-#         response = requests.get(url_w_json, params=params)
-#         response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-#         return response.json()['pageProps']['last_event']['races']
 
 
 # def convert_segment_time(time_ms):
