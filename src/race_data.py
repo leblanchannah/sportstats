@@ -1,8 +1,7 @@
 import requests
-import json
-import pandas as pd
-import matplotlib.pyplot as plt
 from typing import Dict
+import re, json
+from bs4 import BeautifulSoup
 
 # current endpoint for use in Ottawa, not sure if this changes
 SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
@@ -39,14 +38,24 @@ class SportStatsApi:
             'lbl': search
         }
         return self._rest_adapter.get(endpoint='eventsearch', ep_params=params)
+    
+    def get_races_at_event(self, event_slug_name: str):
+        soup = BeautifulSoup(requests.get(f'https://sportstats.one/event/{event_slug_name}').text, "html.parser")
+        # event_script = soup.select('script[id="__NEXT_DATA__"]')#.contents[0]
+        event_script = json.loads(soup.find('script', id="__NEXT_DATA__").text)
+        races = event_script["props"]["pageProps"]["last_event"]["races"]
+        return races
 
-
-
-
+        
+        
 
 if __name__ == "__main__":
     api = SportStatsApi()
-    print(api.search_event("ottawa", 2, 1))
+    print(api.search_event("ottawa", 1, 0)) # gives eid - event id, will need slug
+    ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
+    for race in ottawa_races:
+        print(f'race name:{race["lbl"]}  rid:{race["rid"]}')
+
 
     
      
