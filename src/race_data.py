@@ -128,16 +128,16 @@ def convert_segment_time(time_ms):
     return time_ms / 60000.0
 
 if __name__ == "__main__":
-    # api = SportStatsApi()
-    # event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
-    # print(event_id)
-    # mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
-    # for race in ottawa_races:
-    #     print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
+    api = SportStatsApi()
+    event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
+    print(event_id)
+    mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
+    for race in ottawa_races:
+        print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
-    # json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
-    # with open('../data/10k_test.json', 'w') as f:
-    #     f.write(json_string)
+    json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
+    with open('../data/10k_test.json', 'w') as f:
+        f.write(json_string)
 
     
     with open('../data/10k_test.json') as f:
@@ -156,6 +156,8 @@ if __name__ == "__main__":
     plt.title('Ottawa Race Weekend 10k, Female')
     plt.xlabel('Time (Mins)')
     plt.ylabel('Count')
+
+    plt.savefig('../figures/ottawa_race_weekend_10k_female_hist.png')
     plt.show()
     # 381034 = 10k
 
