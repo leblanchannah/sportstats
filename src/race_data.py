@@ -105,6 +105,7 @@ class RequestResult:
         self.message = str(message)
         self.data = data if data else []
 
+
 class RestAdapter:
 
     def __init__(self, hostname):
@@ -129,6 +130,7 @@ class SportStatsApi:
     def __init__(self, hostname: str = 'https://5b8btxj9jd.execute-api.us-west-2.amazonaws.com/public/'):
         self._rest_adapter = RestAdapter(hostname)
     
+
     def search_event(self, search: str, limit_count: int, limit_offset: int):
         params = {
             'limitcount': limit_count,
@@ -137,12 +139,14 @@ class SportStatsApi:
         }
         return self._rest_adapter.get(endpoint='eventsearch', ep_params=params)
     
+
     def get_races_at_event(self, event_slug_name: str):
         soup = BeautifulSoup(requests.get(f'https://sportstats.one/event/{event_slug_name}').text, "html.parser")
         event_script = json.loads(soup.find('script', id="__NEXT_DATA__").text)
         mid = event_script["props"]["pageProps"]["mid"]
         races = event_script["props"]["pageProps"]["last_event"]["races"]
         return mid, races
+
 
     def get_leaderboard_results(self, race_id:str, event_id:str, mid:str, page:int=0, page_size:int=10,
                                  sort:str='', category:str='', gender:str='', search_data:str=''):
@@ -159,9 +163,31 @@ class SportStatsApi:
         }
         return self._rest_adapter.get(endpoint='results', ep_params=params)
     
-    def get_full_leaderboard():
-        return None
-        
+
+    def get_full_leaderboard(self, race_id:str, event_id:str, mid:str, category:str='', gender:str='', search_data:str='', page_size:int=10, max_amount:int=100):
+        leaderboard = []
+        current_page = 0
+        last_page = 0
+        total_athletes_in_board = 0
+        total_athletes_requested = 0
+
+        while current_page <= last_page:
+            request = api.get_leaderboard_results(race_id, event_id, mid, page=current_page, page_size=page_size,
+                                                  category=category, gender=gender, search_data=search_data).data
+            page_info = request['pageInfo']
+            last_page = page_info['total_pages']
+            total_athletes_in_board = page_info['total_athletes'] # will log later
+
+            for entry in request['results']:
+                leaderboard.append(RaceResult(**entry))
+                total_athletes_requested += 1
+                if total_athletes_requested >max_amount:
+                    last_page = 0
+                    break
+            current_page += 1
+
+
+        return leaderboard
         
 
 if __name__ == "__main__":
@@ -177,6 +203,8 @@ if __name__ == "__main__":
         leaderboard.append(RaceResult(**entry))
 
     print([print(str(x)) for x in leaderboard])
+
+    api.get_full_leaderboard('140564', event_id, '1370', page_size=100, max_amount=200)
 
 
     
@@ -216,19 +244,6 @@ if __name__ == "__main__":
 #     return race_split_names
 
 
-# def leaderboard_to_dataframe():
-#     return None
-
-# ######
-
-
-#     # Get event race list
-#     race_list = api.get_event_race_list('ottawa-race-weekend')
-#     print(race_list)
-
-#     # Example usage
-#     # data = get_leaderboard_results(rid=140564, eid=41996, mid=1370, page=0, page_size=600)
-#     # # print(data)
 
 #     # with open('10k_test.json', 'w') as f:
 #     #     json.dump(data, f)
