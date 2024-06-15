@@ -41,32 +41,23 @@ class SportStatsApi:
     
     def get_races_at_event(self, event_slug_name: str):
         soup = BeautifulSoup(requests.get(f'https://sportstats.one/event/{event_slug_name}').text, "html.parser")
-        # event_script = soup.select('script[id="__NEXT_DATA__"]')#.contents[0]
         event_script = json.loads(soup.find('script', id="__NEXT_DATA__").text)
+        mid = event_script["props"]["pageProps"]["mid"]
         races = event_script["props"]["pageProps"]["last_event"]["races"]
-        return races
+        return mid, races
 
+    # def get_leaderboard_results(self, )
         
         
 
 if __name__ == "__main__":
     api = SportStatsApi()
     print(api.search_event("ottawa", 1, 0)) # gives eid - event id, will need slug
-    ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
+    mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
     for race in ottawa_races:
-        print(f'race name:{race["lbl"]}  rid:{race["rid"]}')
+        print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
 
-    
-     
-#     def search_events(self, search_term, limit_count=20, limit_offset=0):
-#         url = f'{self.base_url}eventsearch'
-#         params = {
-#             'limitcount': limit_count,
-#             'limitoffset': limit_offset,
-#             'lbl': search_term
-#         }
-#         return self._get(url, params=params)
     
 
 #     def get_leaderboard_results(self, race_id, event_id, mid, page=0, page_size=10, sort='', category='', gender='', search_data=''):
