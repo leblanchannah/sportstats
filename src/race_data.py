@@ -3,7 +3,6 @@ from typing import Dict, List
 import re, json
 import pandas as pd
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt
 
 # current endpoint for use in Ottawa, not sure if this changes
 SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
@@ -123,7 +122,7 @@ def convert_segment_time(time_ms):
     return time_ms / 60000.0
 
 if __name__ == "__main__":
-    # api = SportStatsApi()
+    api = SportStatsApi()
     # event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
     # print(event_id)
     # mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
@@ -135,16 +134,16 @@ if __name__ == "__main__":
     #     f.write(json_string)
 
     
-    with open('../data/10k_test.json') as f:
-        d = json.load(f)
-        df = pd.json_normalize(d)
+    # with open('../data/10k_test.json') as f:
+    #     d = json.load(f)
+    #     df = pd.json_normalize(d)
 
     # print(df.columns)
     # print(df.head())
-    df = df[df['gender']=='f']
-    df['race_data.381034.rt'] = convert_segment_time(df['race_data.381034.rt'])
-    print(df.columns)
-    print(df['race_data.381034.rt'].describe(percentiles=[0.01, 0.05, 0.1]))
+    # df = df[df['gender']=='f']
+    # df['race_data.381034.rt'] = convert_segment_time(df['race_data.381034.rt'])
+    # print(df.columns)
+    # print(df['race_data.381034.rt'].describe(percentiles=[0.01, 0.05, 0.1]))
 
     # my_time = df[df['bib']=='30482']['race_data.381034.rt'].values
     # n, bins, patches = plt.hist(df['race_data.381034.rt'], bins=60)
