@@ -22,6 +22,11 @@ def load_data():
 st.title('Ottawa Race Weekend Results')
 data = load_data()
 
+option = st.selectbox(
+    "Bib lookup",
+    (x for x in data['bib'].astype(str)))
+st.write("You selected:", option)
+
 fig = go.Figure()
 fig.add_trace(
     go.Histogram(
