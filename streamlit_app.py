@@ -12,14 +12,9 @@ def load_data():
     print(event_id)
     mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
 
-    json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
-    with open('data/10k_test.json', 'w') as f:
-        f.write(json_string)
+    json_string = [ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)]
 
-    with open('data/10k_test.json') as f:
-        d = json.load(f)
-        df = pd.json_normalize(d)
-
+    df = pd.DataFrame(pd.json_normalize(json_string))
     df['race_data.381034.rt'] = convert_segment_time(df['race_data.381034.rt'])
     return df
 
@@ -37,7 +32,7 @@ fig.add_trace(
 fig.add_trace(
     go.Histogram(
         x=data[data['gender']=='m']['race_data.381034.rt'],
-        name='N'
+        name='M'
     )
 )
 
