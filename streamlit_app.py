@@ -13,10 +13,10 @@ def load_data():
     mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
 
     json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
-    with open('../data/10k_test.json', 'w') as f:
+    with open('data/10k_test.json', 'w') as f:
         f.write(json_string)
 
-    with open('../data/10k_test.json') as f:
+    with open('data/10k_test.json') as f:
         d = json.load(f)
         df = pd.json_normalize(d)
 
