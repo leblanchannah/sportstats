@@ -14,7 +14,6 @@ class RaceResult:
     def __init__(self, pid:int, bib:str, pg:str, pc:str, data: Dict, rank: int, split_config: Dict, **kwargs) -> None:
         self.pid = pid
         self.bib = bib
-        # self.age = pa
         self.gender = pg
         self.category = pc
         self.split_config = self.split_lookup(split_config)
@@ -50,8 +49,6 @@ class RestAdapter:
     def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None) -> RequestResult:
         full_url = self.base_url + endpoint
         try:
-            #os.environ['X-Api-Key']= st.secrets['X_API_KEY']
-
             headers = {
                 'X-Api-Key': os.environ['X_API_KEY']
             }
@@ -138,13 +135,17 @@ if __name__ == "__main__":
 
     api = SportStatsApi()
 
-    event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
+    event_id = '13729'#api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
     mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
     for race in ottawa_races:
         print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
-    json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
-    with open('../data/10k_test.json', 'w') as f:
+    json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('42851', event_id, '1370', page_size=100, max_amount=-1)])
+    with open('../data/ottawa_10k_2017.json', 'w') as f:
         f.write(json_string)
+
+
+        # https://5b8btxj9jd.execute-api.us-west-2.amazonaws.com/public/results?rid=42851&eid=13729&mid=1370&raceid=42851&page=0&pageSize=10&sort=&category=&gender=&searchData=&withInfo=false&withStats=false
+
 
     
     # with open('../data/10k_test.json') as f:
