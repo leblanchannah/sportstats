@@ -3,16 +3,18 @@ from typing import Dict, List
 import re, json
 import pandas as pd
 from bs4 import BeautifulSoup
+import os 
+import streamlit as st
 
 # current endpoint for use in Ottawa, not sure if this changes
 SPORTSTATS_AWS_GATEWAY_ENDPOINT = '5b8btxj9jd'
 
 
 class RaceResult:
-    def __init__(self, pid:int, bib:str, pa:int, pg:str, pc:str, data: Dict, rank: int, split_config: Dict, **kwargs) -> None:
+    def __init__(self, pid:int, bib:str, pg:str, pc:str, data: Dict, rank: int, split_config: Dict, **kwargs) -> None:
         self.pid = pid
         self.bib = bib
-        self.age = pa
+        # self.age = pa
         self.gender = pg
         self.category = pc
         self.split_config = self.split_lookup(split_config)
@@ -48,7 +50,12 @@ class RestAdapter:
     def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None) -> RequestResult:
         full_url = self.base_url + endpoint
         try:
-            response = requests.request(method=http_method, url=full_url, params=ep_params, json=data)
+            #os.environ['X-Api-Key']= st.secrets['X_API_KEY']
+
+            headers = {
+                'X-Api-Key': os.environ['X_API_KEY']
+            }
+            response = requests.request(method=http_method, url=full_url, params=ep_params, json=data, headers=headers)
             data_out = response.json()
             return RequestResult(response.status_code, message=response.reason, data=data_out)
         except requests.exceptions.RequestException as e:
@@ -96,7 +103,10 @@ class SportStatsApi:
             # 'sort': sort,
             'category': category,
             'gender': gender,
-            'searchData': search_data
+            'searchData': search_data,
+            'withInfo':'true',
+            'withStats':'false'
+
         }
         
         while params['page'] <= last_page:
@@ -108,7 +118,10 @@ class SportStatsApi:
 
             for entry in request['results']:
                 entry['split_config'] = request['splitconfig']
-                leaderboard.append(RaceResult(**entry))
+                try:
+                    leaderboard.append(RaceResult(**entry))
+                except TypeError:
+                    print(f'issue with entrant {entry}')
                 total_athletes_requested += 1
                 if total_athletes_requested >= max_amount and max_amount!=-1:
                     last_page = 0
@@ -122,20 +135,19 @@ def convert_segment_time(time_ms):
     return time_ms / 60000.0
 
 if __name__ == "__main__":
-    api = SportStatsApi()
-    # event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
-    # print(event_id)
-    # mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
-    # for race in ottawa_races:
-    #     print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
 
-    # json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
-    # with open('../data/10k_test.json', 'w') as f:
-    #     f.write(json_string)
+    api = SportStatsApi()
+
+    event_id = api.search_event("ottawa", 2, 0).data[1]['eid'] # gives eid - event id, will need slug
+    mid, ottawa_races = (api.get_races_at_event('ottawa-race-weekend'))
+    for race in ottawa_races:
+        print(f'race name:{race["lbl"]}  rid:{race["rid"]}, mid:{mid}')
+    json_string = json.dumps([ob.__dict__ for ob in api.get_leaderboard_results('140564', event_id, '1370', page_size=100, max_amount=-1)])
+    with open('../data/10k_test.json', 'w') as f:
+        f.write(json_string)
 
     
     # with open('../data/10k_test.json') as f:
-    #     d = json.load(f)
     #     df = pd.json_normalize(d)
 
     # print(df.columns)

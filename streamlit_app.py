@@ -27,28 +27,34 @@ option = st.selectbox(
     (x for x in data['bib'].astype(str)))
 st.write("You selected:", option)
 
-fig = go.Figure()
-fig.add_trace(
-    go.Histogram(
-        x=data[data['gender']=='f']['race_data.381034.rt'],
-        name='F'
-    )
-)
-fig.add_trace(
-    go.Histogram(
-        x=data[data['gender']=='m']['race_data.381034.rt'],
-        name='M'
-    )
-)
 
-# Reduce opacity to see both histograms
-fig.update_traces(opacity=0.75)
+def race_time_histogram(data, groupby_col):
+    sample_groups = data[groupby_col].unique()
+    fig = go.Figure()
+    for group_name in sample_groups:
+        fig.add_trace(
+            go.Histogram(
+                x=data[data[groupby_col]==group_name]['race_data.381034.rt'],
+                name=f'{group_name}'
+            )
+        )
+    fig.update_traces(opacity=0.75)
 
-fig.update_layout(
-    barmode='overlay',
-    title="10k Race Times",
-    xaxis_title="Time (mins)",
-    yaxis_title="Count",
-    legend_title="Gender"
-)
+    fig.update_layout(
+        barmode='overlay',
+        title="10k Race Times",
+        xaxis_title="Time (mins)",
+        yaxis_title="Count",
+        legend_title=groupby_col
+    )
+
+    return fig 
+
+
+fig = race_time_histogram(data, 'gender')
 st.plotly_chart(fig)
+
+fig = race_time_histogram(data, 'category')
+st.plotly_chart(fig)
+
+print(data.columns)
